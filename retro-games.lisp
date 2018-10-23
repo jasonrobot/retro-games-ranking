@@ -61,7 +61,7 @@
         :key #'votes))
 
 (defun add-game (name)
-  "Add a game to our database."
+  "Add a game called NAME to our database."
   (unless (game-stored? name)
     (push (make-instance 'game :name name) *games*)))
 
@@ -137,7 +137,7 @@
       (:title "Retro Games")
     (:h1 "Top 10 Retro Games OF ALL TIME")
     (:p "Don't see your favorite game listed?"
-        (:a :href "add-game.html" "Add a new game"))
+        (:a :href "new-game.html" "Add a new game"))
     (:h2 "Current standings:")
     (:div :id "chart"
           (:ol
@@ -155,8 +155,23 @@
         (vote-for-game game))
     (redirect "/retro-games.html")))
 
-(define-url-fn (add-game)
+(define-url-fn (game-added)
+  (let ((name (parameter "name")))
+    (unless (or (null name) (zerop (length name)))
+      (add-game name))
+    (redirect "/retro-games.html")))
+
+(define-url-fn (new-game)
   (standard-page-template
       (:title "Add a new game")
     (:h1 "Add a new game to the list")
-    (:form
+    (:form :action "/game-added.html" :method "post"
+           :onsubmit
+           (ps-inline
+            (when (= name.value "")
+              (alert "Please enter a name")
+              (return false)))
+           (:label "Game name:")
+           (:input :type "text"
+                   :name "name")
+           (:button :type "submit" "Submit"))))
